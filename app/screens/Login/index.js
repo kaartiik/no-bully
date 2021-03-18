@@ -12,6 +12,7 @@ import {
   Platform,
   StyleSheet,
   TextInput,
+  Image,
 } from 'react-native';
 import { Formik } from 'formik';
 import * as yup from 'yup';
@@ -19,16 +20,11 @@ import { useDispatch } from 'react-redux';
 import { login, loginAnon } from '../../providers/actions/User';
 import { navigate } from '../../providers/services/NavigatorService';
 import colours from '../../providers/constants/colours';
+import globalStyles from '../../providers/constants/globalStyles';
 
 // import { AuthContext } from '../navigation/AuthProvider';\
 
 const styles = StyleSheet.create({
-  greeting: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
-  },
   bigBtn: {
     marginHorizontal: 30,
     backgroundColor: colours.themePrimary,
@@ -39,13 +35,12 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: 48,
-    marginHorizontal: 30,
   },
   textboxContainer: {
-    backgroundColor: colours.themePrimaryLight,
-    borderRadius: 3,
     padding: 5,
     marginVertical: 5,
+    borderBottomWidth: 2,
+    borderBottomColor: colours.lightGray,
   },
 });
 
@@ -77,11 +72,19 @@ export default function Login({ navigation }) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
+      style={{ flex: 1, paddingHorizontal: 30, backgroundColor: colours.white }}
     >
       <StatusBar barStyle="default" />
 
-      <Text style={styles.greeting}>{'Hello again.\nWelcome back.'}</Text>
+      <Image
+        source={require('../../../assets/Logo.png')}
+        style={globalStyles.authLogo}
+      />
+
+      <Text style={globalStyles.authGreeting}>{'Sign In'}</Text>
+      <Text style={{ color: colours.gray, marginTop: 15 }}>
+        {'Hi there! Nice to see you again.'}
+      </Text>
 
       <ScrollView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -101,7 +104,8 @@ export default function Login({ navigation }) {
                 errors,
               }) => {
                 return (
-                  <View style={{ padding: 10 }}>
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={globalStyles.authFieldTitle}>Email</Text>
                     <View style={styles.textboxContainer}>
                       <TextInput
                         placeholder="Enter email..."
@@ -114,6 +118,7 @@ export default function Login({ navigation }) {
                       {(touched.email || submitCount > 0) && errors.email}
                     </Text>
 
+                    <Text style={globalStyles.authFieldTitle}>Password</Text>
                     <View style={styles.textboxContainer}>
                       <TextInput
                         secureTextEntry
@@ -132,7 +137,9 @@ export default function Login({ navigation }) {
                       onPress={handleSubmit}
                       title="SUBMIT"
                     >
-                      <Text style={{ color: 'white' }}>Sign In</Text>
+                      <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                        Sign In
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 );
@@ -140,12 +147,14 @@ export default function Login({ navigation }) {
             </Formik>
 
             <TouchableOpacity
-              style={{ justifyContent: 'center', alignItems: 'center' }}
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: 10,
+              }}
               onPress={() => navigation.navigate('Register')}
             >
-              <Text style={{ color: 'blue' }}>
-                Don't have an account? Register
-              </Text>
+              <Text style={{ color: colours.themePrimary }}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </TouchableWithoutFeedback>

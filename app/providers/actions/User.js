@@ -64,9 +64,9 @@ export const syncChats = () => ({
   type: actions.SYNC_CHATS,
 });
 
-export const register = (role, name, mobile, email, password) => ({
+export const register = (name, email, password) => ({
   type: actions.REGISTER_REQUEST,
-  payload: { role, name, mobile, email, password },
+  payload: { name, email, password },
 });
 
 export const login = ({ email, password }) => ({

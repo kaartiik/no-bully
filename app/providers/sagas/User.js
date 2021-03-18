@@ -138,7 +138,7 @@ function* loginSaga({ email, password }) {
 }
 
 function* registerSaga({ payload }) {
-  const { role, name, mobile, email, password } = payload;
+  const { name, email, password } = payload;
 
   try {
     const { user } = yield call(
@@ -150,9 +150,7 @@ function* registerSaga({ payload }) {
     const { token: pushToken } = yield call(getExpoToken);
 
     yield call(rsf.database.update, `users/${user.uid}`, {
-      role,
       name,
-      mobile,
       email,
       password,
       uuid: user.uid,
