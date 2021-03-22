@@ -22,11 +22,18 @@ import {
   putLoadingStatus,
   putChats,
   putUserChats,
+  putCurrentLevel,
+  putCurrentQuestion,
 } from '../actions/User';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
+
+const getCurrentQuestionFromState = (state) =>
+  state.userReducer.currentQuestion;
+const getCurrentLevelFromState = (state) => state.userReducer.level;
+const getCurrentScorelFromState = (state) => state.userReducer.currentScore;
 
 const getUuidFromState = (state) => state.userReducer.uuid;
 const getNameFromState = (state) => state.userReducer.name;
@@ -105,16 +112,14 @@ function* syncUserSaga() {
   const user = yield call(onAuthStateChanged);
 
   if (user) {
-    const { token: pushToken } = yield call(getExpoToken);
+    // const { token: pushToken } = yield call(getExpoToken);
 
-    yield call(rsf.database.update, `users/${user.uid}/token`, pushToken.data);
+    // yield call(rsf.database.update, `users/${user.uid}/token`, pushToken.data);
 
     const { dbUser } = yield call(getUserProfile, user.uid);
 
     if (dbUser !== null && dbUser !== undefined) {
       yield put(putUserProfile(dbUser));
-
-      yield fork(startListener);
 
       setTimeout(() => {
         reset('AppStack');
@@ -147,14 +152,15 @@ function* registerSaga({ payload }) {
       password
     );
 
-    const { token: pushToken } = yield call(getExpoToken);
+    // const { token: pushToken } = yield call(getExpoToken);
 
     yield call(rsf.database.update, `users/${user.uid}`, {
       name,
       email,
       password,
+      level: 'L1',
       uuid: user.uid,
-      token: pushToken.data,
+      // token: pushToken.data,
     });
 
     yield call(syncUserSaga);
@@ -174,205 +180,122 @@ function* logoutSaga() {
   yield call(syncUserSaga);
 }
 
-function* updateProfileSaga({ payload }) {
-  const { uuid, name, phone, units } = payload;
-  yield put(putLoadingStatus(true));
+function* nextQuestionSaga({ payload }) {
+  const onSwitch = payload;
+  const currentQuestionStr = yield select(getCurrentQuestionFromState);
+  const currentLevelStr = yield select(getCurrentLevelFromState);
+  const currentScore = yield select(getCurrentScorelFromState);
 
-  try {
-    if (!units.includes('NONE')) {
-      yield all(
-        units.map(function* (unit) {
-          yield call(rsf.database.patch, `units/${unit}/users/${uuid}`, {
-            name,
-            phone,
-          });
-        })
-      );
+  const currentQuestion = parseInt(currentQuestionStr.substring(1));
+  const currentLevel = parseInt(currentLevelStr.substring(1));
+
+  switch (currentLevelStr) {
+    case 'L1': {
+      if (currentQuestion !== 5) {
+        const newQuestion = currentQuestion + 1;
+        yield put(putCurrentQuestion(`Q${newQuestion}`));
+
+        onSwitch();
+      } else if (currentQuestion === 5 && currentScore > 3) {
+        // const newLevel = currentLevel + 1;
+
+        // yield put(putCurrentLevel(`L${newLevel}`));
+        // yield put(currentQuestion(`Q1`));
+
+        console.log(`complete level!`);
+
+        reset('LevelCompleteScreen');
+      } else {
+        reset('LevelCompleteScreen');
+      }
+      break;
     }
+    case 'L2': {
+      if (currentQuestion !== 5) {
+        const newQuestion = currentQuestion + 1;
+        yield put(putCurrentQuestion(`Q${newQuestion}`));
 
-    yield call(rsf.database.patch, `users/${uuid}`, {
-      name,
-      phone,
-    });
+        onSwitch();
+      } else if (currentQuestion === 5 && currentScore > 3) {
+        const newLevel = currentLevel + 1;
 
-    yield put(putUserName(name));
-    yield put(putUserPhone(phone));
+        yield put(putCurrentLevel(`L${newLevel}`));
+        yield put(currentQuestion(`Q1`));
 
-    yield put(putLoadingStatus(false));
-  } catch (error) {
-    yield put(putLoadingStatus(false));
-
-    alert(`Error updating user details! ${error}`);
-  }
-}
-
-const sendPushNotification = async (receiverToken, senderName, senderMsg) => {
-  const message = {
-    to: receiverToken,
-    sound: 'default',
-    title: senderName,
-    body: senderMsg,
-    data: { data: 'goes here' },
-    _displayInForeground: true,
-  };
-
-  console.log(message);
-
-  const response = await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Accept-encoding': 'gzip, deflate',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(message),
-  });
-};
-
-function* sendMesssageSaga({ payload }) {
-  const { receiverUuid, receiverToken, message } = payload;
-  const senderUuid = yield select(getUuidFromState);
-  const senderName = yield select(getNameFromState);
-
-  const messageTime = dayjs().valueOf();
-
-  const msgObject = {
-    from: senderUuid,
-    message: message,
-    time: messageTime,
-    to: receiverUuid,
-  };
-
-  try {
-    yield call(
-      rsf.database.update,
-      `chats/${senderUuid}/${receiverUuid}/${messageTime}`,
-      msgObject
-    );
-    yield call(
-      rsf.database.update,
-      `chats/${receiverUuid}/${senderUuid}/${messageTime}`,
-      msgObject
-    );
-
-    yield call(sendPushNotification, receiverToken, senderName, message);
-  } catch (error) {
-    alert(`Failed to send message. Please try again. ${error}`);
-  }
-}
-
-function* syncChatsSaga() {
-  const uuid = yield select(getUuidFromState);
-  const chats = yield call(rsf.database.read, `chats/${uuid}`);
-
-  // const { value } = yield take(channel);
-
-  if (chats !== null && chats !== undefined) {
-    const receiverKeys = Object.keys(chats);
-    yield put(putChats(chats));
-
-    const newUserChats = yield all(
-      receiverKeys.map(function* (key, idx) {
-        const userDetails = yield call(rsf.database.read, `users/${key}`);
-        const chatObject = chats[key];
-        const chatMessagesArr = Object.values(chatObject);
-
-        const chatUser = {
-          uid: key,
-          token: userDetails.token,
-          name: userDetails.name,
-          msg: chatMessagesArr[0].message,
-          time: chatMessagesArr[0].time,
-        };
-
-        return chatUser;
-      })
-    );
-    yield put(putUserChats(newUserChats));
-  } else {
-    yield put(putUserChats([]));
-  }
-}
-
-function* startListener() {
-  // #1
-  const uuid = yield select(getUuidFromState);
-  const channel = new eventChannel((emiter) => {
-    const listener = database.ref(`chats/${uuid}`).on('value', (snapshot) => {
-      emiter({ data: snapshot.val() || {} });
-    });
-
-    // #2
-    return () => {
-      listener.off();
-    };
-  });
-
-  // #3
-  while (true) {
-    const { data } = yield take(channel);
-    // #4
-    console.log('listener start');
-    if (data !== null && data !== undefined) {
-      const receiverKeys = Object.keys(data);
-      yield put(putChats(data));
-
-      const newUserChats = yield all(
-        receiverKeys.map(function* (key, idx) {
-          const userDetails = yield call(rsf.database.read, `users/${key}`);
-          const chatObject = data[key];
-          const chatMessagesArr = Object.values(chatObject);
-
-          const chatUser = {
-            uid: key,
-            token: userDetails.token,
-            name: userDetails.name,
-            msg: chatMessagesArr[0].message,
-            time: chatMessagesArr[0].time,
-          };
-
-          return chatUser;
-        })
-      );
-      yield put(putUserChats(newUserChats));
-    } else {
-      yield put(putUserChats([]));
+        reset('LevelCompleteScreen');
+      } else {
+        reset('LevelCompleteScreen');
+      }
+      break;
     }
-    // yield put(actionsCreators.updateList(data));
+    case 'L3': {
+      if (currentQuestion !== 5) {
+        const newQuestion = currentQuestion + 1;
+        yield put(putCurrentQuestion(`Q${newQuestion}`));
+
+        onSwitch();
+      } else if (currentQuestion === 5 && currentScore > 3) {
+        const newLevel = currentLevel + 1;
+
+        yield put(putCurrentLevel(`L${newLevel}`));
+        yield put(currentQuestion(`Q1`));
+
+        reset('LevelCompleteScreen');
+      } else {
+        reset('LevelCompleteScreen');
+      }
+      break;
+    }
+    case 'L4': {
+      if (currentQuestion !== 5) {
+        const newQuestion = currentQuestion + 1;
+        yield put(putCurrentQuestion(`Q${newQuestion}`));
+
+        onSwitch();
+      } else if (currentQuestion === 5 && currentScore > 3) {
+        const newLevel = currentLevel + 1;
+
+        yield put(putCurrentLevel(`L${newLevel}`));
+        yield put(currentQuestion(`Q1`));
+
+        reset('LevelCompleteScreen');
+      } else {
+        reset('LevelCompleteScreen');
+      }
+      break;
+    }
   }
 }
 
-function* getChatUserDetailsSaga({ payload }) {
-  const userUuid = payload;
+function* retryLevelSaga() {
+  const currentLevelStr = yield select(getCurrentLevelFromState);
 
-  try {
-    const userDetails = yield call(rsf.database.read, `users/${userUuid}`);
+  yield put(putCurrentLevel(currentLevelStr));
+  yield put(currentQuestion(`Q1`));
 
-    console.log(userDetails);
+  reset('Questions');
+}
 
-    yield call(navigate, 'Chats', {
-      screen: 'ChatScreen',
-      params: {
-        nameClicked: userDetails.name,
-        uidClicked: userDetails.uuid,
-        tokenClicked: userDetails.token,
-      },
-    });
-  } catch (error) {
-    alert(`Failed to retrieve user. ${error}`);
-  }
+function* nextLevelSaga() {
+  const currentLevelStr = yield select(getCurrentLevelFromState);
+  const currentLevel = parseInt(currentLevelStr.substring(1));
+  const newLevel = currentLevel + 1;
+
+  yield put(putCurrentLevel(newLevel));
+  yield put(currentQuestion(`Q1`));
+
+  reset('Questions');
 }
 
 export default function* User() {
   yield all([
-    takeLatest(actions.SYNC_CHATS, syncChatsSaga),
     takeLatest(actions.REGISTER_REQUEST, registerSaga),
     takeLatest(actions.REGISTER_REQUEST, registerSaga),
     takeLatest(actions.LOGIN.REQUEST, loginSaga),
     takeLatest(actions.LOGOUT.REQUEST, logoutSaga),
+    takeLatest(actions.NEXT_QUESTION, nextQuestionSaga),
+    takeLatest(actions.RETRY_LEVEL, retryLevelSaga),
+    takeLatest(actions.NEXT_LEVEL, nextLevelSaga),
     takeEvery(actions.SYNC_USER, syncUserSaga),
-    takeLatest(actions.UPDATE.USER_PROFILE, updateProfileSaga),
-    takeLatest(actions.SEND_MESSAGE, sendMesssageSaga),
-    takeLatest(actions.GET.CHAT_USER_DETAILS, getChatUserDetailsSaga),
   ]);
 }

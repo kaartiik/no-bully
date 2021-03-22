@@ -1,9 +1,7 @@
 import { all } from 'redux-saga/effects';
 import User from './User';
-import Barber from './Barber';
-import Client from './Client';
-import AllPermissions from './Permissions';
+import Questions from './Questions';
 
 export default function* rootSaga() {
-  yield all([User(), Barber(), Client(), AllPermissions()]);
+  yield all([User(), Questions()]);
 }

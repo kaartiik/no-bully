@@ -13,8 +13,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import colours from '../../providers/constants/colours';
 import globalStyles from '../../providers/constants/globalStyles';
 
-import { getBookings, cancelBooking } from '../../providers/actions/Client';
-
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
@@ -60,6 +58,10 @@ const styles = StyleSheet.create({
 });
 
 function Home({ route, navigation }) {
+  const { level } = useSelector((state) => ({
+    level: state.userReducer.level,
+  }));
+
   return (
     <View
       style={{
@@ -70,7 +72,7 @@ function Home({ route, navigation }) {
       }}
     >
       <Text style={{ fontSize: 80 }}>No Bully</Text>
-      <Text style={{ fontSize: 16 }}>Current Level: </Text>
+      <Text style={{ fontSize: 16 }}>Current Level: {level}</Text>
       <TouchableOpacity
         style={{
           marginTop: 30,

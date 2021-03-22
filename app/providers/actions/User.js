@@ -4,64 +4,23 @@ export const actions = {
     REQUEST: 'LOGIN_REQUEST',
   },
   SYNC_USER: 'SYNC_USER',
-  SYNC_CHATS: 'SYNC_CHATS',
-  FORMAT_CHATS: 'FORMAT_CHATS',
   LOGOUT: {
     REQUEST: 'LOGOUT_REQUEST',
   },
-  GET: {
-    CHAT: 'GET_CHAT',
-    CHAT_USER_DETAILS: 'GET_CHAT_USER_DETAILS',
-  },
-  SEND_MESSAGE: 'SEND_MESSAGE',
   PUT: {
     TOKEN: 'PUT_TOKEN',
     USER_PROFILE: 'PUT_USER_PROFILE',
-    USER_CHATS: 'PUT_USER_CHATS',
-    CHATS: 'PUT_CHATS',
-    LOADING_STATUS: 'PUT_LOADING_STATUS',
+    CURRENT_LEVEL: 'PUT_CURRENT_LEVEL',
+    CURRENT_QUESTION: 'PUT_CURRENT_QUESTION',
   },
-  UPDATE: {
-    USER_PROFILE: 'UPDATE_USER_PROFILE',
-  },
+  RETRY_LEVEL: 'RETRY_LEVEL',
+  NEXT_LEVEL: 'NEXT_LEVEL',
+  ADD_CURRENT_SCORE: 'ADD_CURRENT_SCORE',
+  NEXT_QUESTION: 'NEXT_QUESTION',
 };
-
-export const getChatUserDetails = (userUuid) => ({
-  type: actions.GET.CHAT_USER_DETAILS,
-  payload: userUuid,
-});
-
-export const sendMessage = (receiverUuid, receiverToken, message) => ({
-  type: actions.SEND_MESSAGE,
-  payload: { receiverUuid, receiverToken, message },
-});
-
-export const formatUserChats = (chats) => ({
-  type: actions.FORMAT_CHATS,
-  payload: chats,
-});
-
-export const putUserChats = (chats) => ({
-  type: actions.PUT.USER_CHATS,
-  payload: chats,
-});
-
-export const getChat = (receiverUuid) => ({
-  type: actions.GET.CHAT,
-  payload: receiverUuid,
-});
-
-export const putChats = (chat) => ({
-  type: actions.PUT.CHATS,
-  payload: chat,
-});
 
 export const syncUser = () => ({
   type: actions.SYNC_USER,
-});
-
-export const syncChats = () => ({
-  type: actions.SYNC_CHATS,
 });
 
 export const register = (name, email, password) => ({
@@ -84,7 +43,29 @@ export const putUserProfile = (profile) => ({
   payload: profile,
 });
 
-export const putLoadingStatus = (isLoading) => ({
-  type: actions.PUT.LOADING_STATUS,
-  isLoading,
+export const putCurrentLevel = (level) => ({
+  type: actions.PUT.CURRENT_LEVEL,
+  payload: level,
+});
+
+export const putCurrentQuestion = (question) => ({
+  type: actions.PUT.CURRENT_QUESTION,
+  payload: question,
+});
+
+export const addCurrentScore = () => ({
+  type: actions.ADD_CURRENT_SCORE,
+});
+
+export const switchNextQuestion = (onSwitch) => ({
+  type: actions.NEXT_QUESTION,
+  payload: onSwitch,
+});
+
+export const retryLevel = () => ({
+  type: actions.RETRY_LEVEL,
+});
+
+export const nextLevel = () => ({
+  type: actions.NEXT_LEVEL,
 });

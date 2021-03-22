@@ -3,48 +3,41 @@ import { actions } from '../actions/User';
 const initialState = {
   name: '',
   email: '',
-  mobile: '',
+  level: 'L1',
+  currentQuestion: 'Q1',
   uuid: '',
-  role: '',
-  isAdmin: false,
   token: '',
-  userChats: [],
-  allChats: null,
-  isLoading: false,
+  currentScore: 0,
 };
 
 export default function userReducer(state = initialState, action = {}) {
   switch (action.type) {
     case actions.PUT.USER_PROFILE: {
-      const { uuid, name, email, mobile, role, token } = action.payload;
+      const { uuid, name, email, level } = action.payload;
       return {
         ...state,
         uuid,
         name,
         email,
-        mobile,
-        role,
-        isAdmin: role === 'barber' ? true : false,
-        token,
+        level,
       };
     }
-
-    case actions.PUT.USER_CHATS:
+    case actions.ADD_CURRENT_SCORE:
       return {
         ...state,
-        userChats: action.payload,
+        currentScore: state.currentScore + 1,
       };
 
-    case actions.PUT.CHATS:
+    case actions.PUT.CURRENT_LEVEL:
       return {
         ...state,
-        allChats: action.payload,
+        level: action.payload,
       };
 
-    case actions.PUT.LOADING_STATUS:
+    case actions.PUT.CURRENT_QUESTION:
       return {
         ...state,
-        isLoading: action.isLoading,
+        currentQuestion: action.payload,
       };
 
     default:

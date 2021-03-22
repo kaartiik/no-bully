@@ -20,7 +20,7 @@ import {
   putBarberShops,
   putBookings,
   putLoadingStatus,
-} from '../actions/Client';
+} from '../actions/Questions';
 
 import * as Notifications from 'expo-notifications';
 
@@ -184,7 +184,7 @@ function* cancelBookingSaga({ payload }) {
   }
 }
 
-export default function* Client() {
+export default function* Questions() {
   yield all([
     takeLatest(actions.GET.BARBER_SHOPS, getBarberShopsSaga),
     takeLatest(actions.CONFIRM_BOOKING, confirmBookingSaga),

@@ -1,4 +1,4 @@
-import { actions } from '../actions/Client';
+import { actions } from '../actions/Questions';
 
 const initialState = {
   barberShops: [],
@@ -8,7 +8,7 @@ const initialState = {
   isLoading: false,
 };
 
-export default function clientReducer(state = initialState, action = {}) {
+export default function questionsReducer(state = initialState, action = {}) {
   switch (action.type) {
     case actions.PUT.BARBER_SHOPS:
       return {

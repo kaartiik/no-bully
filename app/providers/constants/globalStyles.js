@@ -28,6 +28,11 @@ const globalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  imgContainer: {
+    height: 400,
+    width: '80%',
+    resizeMode: 'contain',
+  },
 });
 
 export default globalStyles;

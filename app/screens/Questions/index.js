@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
+import { useDispatch, useSelector } from 'react-redux';
 import AppBar from '../../components/AppBar';
 import colours from '../../providers/constants/colours';
 import questions from '../../providers/constants/questions';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import globalStyles from '../../providers/constants/globalStyles';
 dayjs.extend(customParseFormat);
+
+import { addCurrentScore } from '../../providers/actions/User';
 
 const styles = StyleSheet.create({
   answerButton: {
@@ -19,23 +23,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     margin: 10,
   },
-  imgContainer: {
-    height: 400,
-    width: '80%',
-    resizeMode: 'contain',
-  },
 });
 
 function Questions({ route, navigation }) {
+  const dispatch = useDispatch();
+  const [randomBool, setRandomBool] = useState(false);
+
+  const { level, currentQuestion } = useSelector((state) => ({
+    level: state.userReducer.level,
+    currentQuestion: state.userReducer.currentQuestion,
+  }));
+
+  useEffect(() => {
+    const generatedBool = Math.random() < 0.5;
+    setRandomBool(generatedBool);
+  }, []);
+
+  const validateAnswerAndNavigate = (answer) => {
+    if (answer === 'CORRECT') {
+      dispatch(addCurrentScore());
+      navigation.navigate('CorrectAnswerScreen');
+    } else {
+      navigation.navigate('WrongAnswerScreen');
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colours.white }}>
-      <AppBar title="Level" />
+      <AppBar title={`Level ${level}`} />
 
       <View style={{ padding: 10, alignItems: 'center' }}>
-        <Text>Question</Text>
+        <Text>Question {currentQuestion}</Text>
         <Image
-          source={{ uri: questions.L1.Q1.imageUrl }}
-          style={styles.imgContainer}
+          source={{ uri: questions[level][currentQuestion].imageUrl }}
+          style={globalStyles.imgContainer}
         />
 
         <View
@@ -45,13 +66,39 @@ function Questions({ route, navigation }) {
             alignItems: 'center',
           }}
         >
-          <TouchableOpacity style={styles.answerButton}>
-            <Text>{questions.L1.Q1.correctOption}</Text>
-          </TouchableOpacity>
+          {randomBool ? (
+            <>
+              <TouchableOpacity
+                onPress={() => validateAnswerAndNavigate('CORRECT')}
+                style={styles.answerButton}
+              >
+                <Text>{questions.L1.Q1.correctOption}</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity style={styles.answerButton}>
-            <Text>{questions.L1.Q1.wrongOption}</Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => validateAnswerAndNavigate('WRONG')}
+                style={styles.answerButton}
+              >
+                <Text>{questions.L1.Q1.wrongOption}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                onPress={() => validateAnswerAndNavigate('WRONG')}
+                style={styles.answerButton}
+              >
+                <Text>{questions.L1.Q1.wrongOption}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => validateAnswerAndNavigate('CORRECT')}
+                style={styles.answerButton}
+              >
+                <Text>{questions.L1.Q1.correctOption}</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
     </View>

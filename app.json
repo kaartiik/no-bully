@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Barber App",
-    "slug": "barber-app",
+    "name": "No Bully",
+    "slug": "no-bully",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,12 +17,11 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.example.barberapp",
+      "bundleIdentifier": "com.example.nobully",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.example.barberapp",
-      "googleServicesFile": "./google-services.json",
+      "package": "com.example.nobully",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
