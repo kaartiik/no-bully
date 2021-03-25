@@ -271,7 +271,7 @@ function* retryLevelSaga() {
   const currentLevelStr = yield select(getCurrentLevelFromState);
 
   yield put(putCurrentLevel(currentLevelStr));
-  yield put(currentQuestion(`Q1`));
+  yield put(putCurrentQuestion(`Q1`));
 
   reset('Questions');
 }
@@ -281,8 +281,8 @@ function* nextLevelSaga() {
   const currentLevel = parseInt(currentLevelStr.substring(1));
   const newLevel = currentLevel + 1;
 
-  yield put(putCurrentLevel(newLevel));
-  yield put(currentQuestion(`Q1`));
+  yield put(putCurrentLevel(`L${newLevel}`));
+  yield put(putCurrentQuestion(`Q1`));
 
   reset('Questions');
 }
