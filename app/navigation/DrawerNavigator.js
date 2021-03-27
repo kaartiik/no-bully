@@ -11,6 +11,7 @@ import colours from '../providers/constants/colours';
 
 import MainStack from './MainStack';
 import Instructions from '../screens/Instructions';
+import Achievements from '../screens/Achievements';
 
 function CustomDrawerContent(props) {
   const dispatch = useDispatch();
@@ -44,6 +45,7 @@ export default function DrawerNavigator() {
     >
       <Drawer.Screen name="Home" component={MainStack} />
       <Drawer.Screen name="How to Play?" component={Instructions} />
+      <Drawer.Screen name="Achievements" component={Achievements} />
     </Drawer.Navigator>
   );
 }

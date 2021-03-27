@@ -12,11 +12,13 @@ export const actions = {
     USER_PROFILE: 'PUT_USER_PROFILE',
     CURRENT_LEVEL: 'PUT_CURRENT_LEVEL',
     CURRENT_QUESTION: 'PUT_CURRENT_QUESTION',
+    CURRENT_SCORE: 'PUT_CURRENT_SCORE',
   },
   RETRY_LEVEL: 'RETRY_LEVEL',
   NEXT_LEVEL: 'NEXT_LEVEL',
-  ADD_CURRENT_SCORE: 'ADD_CURRENT_SCORE',
+  SAVE_SCORE: 'SAVE_SCORE',
   NEXT_QUESTION: 'NEXT_QUESTION',
+  GO_HOME: 'GO_HOME',
 };
 
 export const syncUser = () => ({
@@ -53,8 +55,14 @@ export const putCurrentQuestion = (question) => ({
   payload: question,
 });
 
-export const addCurrentScore = () => ({
-  type: actions.ADD_CURRENT_SCORE,
+export const putCurrentScore = (currentScore, currentLevelScore) => ({
+  type: actions.PUT.CURRENT_SCORE,
+  payload: { currentScore, currentLevelScore },
+});
+
+export const saveScore = (answer, navigateTo) => ({
+  type: actions.SAVE_SCORE,
+  payload: { answer, navigateTo },
 });
 
 export const switchNextQuestion = (onSwitch) => ({
@@ -68,4 +76,8 @@ export const retryLevel = () => ({
 
 export const nextLevel = () => ({
   type: actions.NEXT_LEVEL,
+});
+
+export const goHome = () => ({
+  type: actions.GO_HOME,
 });

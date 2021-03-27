@@ -6,26 +6,39 @@ const initialState = {
   level: 'L1',
   currentQuestion: 'Q1',
   uuid: '',
-  token: '',
   currentScore: 0,
+  currentLevelScore: 0,
 };
 
 export default function userReducer(state = initialState, action = {}) {
   switch (action.type) {
     case actions.PUT.USER_PROFILE: {
-      const { uuid, name, email, level } = action.payload;
-      return {
-        ...state,
-        uuid,
+      const {
         name,
         email,
         level,
-      };
-    }
-    case actions.ADD_CURRENT_SCORE:
+        currentQuestion,
+        currentScore,
+        currentLevelScore,
+        uuid,
+      } = action.payload;
       return {
         ...state,
-        currentScore: state.currentScore + 1,
+        name,
+        email,
+        level,
+        currentQuestion,
+        currentScore,
+        currentLevelScore,
+        uuid,
+      };
+    }
+    case actions.PUT.CURRENT_SCORE:
+      const { currentScore, currentLevelScore } = action.payload;
+      return {
+        ...state,
+        currentScore,
+        currentLevelScore,
       };
 
     case actions.PUT.CURRENT_LEVEL:

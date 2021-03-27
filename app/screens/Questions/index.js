@@ -11,7 +11,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import globalStyles from '../../providers/constants/globalStyles';
 dayjs.extend(customParseFormat);
 
-import { addCurrentScore } from '../../providers/actions/User';
+import { saveScore } from '../../providers/actions/User';
 
 const styles = StyleSheet.create({
   answerButton: {
@@ -29,9 +29,16 @@ function Questions({ route, navigation }) {
   const dispatch = useDispatch();
   const [randomBool, setRandomBool] = useState(false);
 
-  const { level, currentQuestion } = useSelector((state) => ({
+  const {
+    level,
+    currentQuestion,
+    currentScore,
+    currentLevelScore,
+  } = useSelector((state) => ({
     level: state.userReducer.level,
     currentQuestion: state.userReducer.currentQuestion,
+    currentScore: state.userReducer.currentScore,
+    currentLevelScore: state.userReducer.currentLevelScore,
   }));
 
   useEffect(() => {
@@ -41,10 +48,13 @@ function Questions({ route, navigation }) {
 
   const validateAnswerAndNavigate = (answer) => {
     if (answer === 'CORRECT') {
-      dispatch(addCurrentScore());
-      navigation.navigate('CorrectAnswerScreen');
+      dispatch(
+        saveScore(answer, () => navigation.navigate('CorrectAnswerScreen'))
+      );
     } else {
-      navigation.navigate('WrongAnswerScreen');
+      dispatch(
+        saveScore(answer, () => navigation.navigate('WrongAnswerScreen'))
+      );
     }
   };
 
@@ -54,6 +64,8 @@ function Questions({ route, navigation }) {
 
       <View style={{ padding: 10, alignItems: 'center' }}>
         <Text>Question {currentQuestion}</Text>
+        <Text>CSCore {currentScore}</Text>
+        <Text>currentLevelScore {currentLevelScore}</Text>
         <Image
           source={{ uri: questions[level][currentQuestion].imageUrl }}
           style={globalStyles.imgContainer}

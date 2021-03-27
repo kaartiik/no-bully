@@ -24,6 +24,7 @@ import {
   putUserChats,
   putCurrentLevel,
   putCurrentQuestion,
+  putCurrentScore,
 } from '../actions/User';
 
 import dayjs from 'dayjs';
@@ -33,7 +34,10 @@ dayjs.extend(customParseFormat);
 const getCurrentQuestionFromState = (state) =>
   state.userReducer.currentQuestion;
 const getCurrentLevelFromState = (state) => state.userReducer.level;
-const getCurrentScorelFromState = (state) => state.userReducer.currentScore;
+const getCurrentScoreFromState = (state) => state.userReducer.currentScore;
+const getCurrentLevelScoreFromState = (state) =>
+  state.userReducer.currentLevelScore;
+const getLastLevelScoreFromState = (state) => state.userReducer.lastLevelScore;
 
 const getUuidFromState = (state) => state.userReducer.uuid;
 const getNameFromState = (state) => state.userReducer.name;
@@ -63,59 +67,10 @@ const getUserProfile = (uid) =>
     .then((snapshot) => ({ dbUser: snapshot.val() }))
     .catch((error) => ({ error }));
 
-function* getExpoToken() {
-  try {
-    console.log('## get expo token');
-    const { status: existingStatus } = yield call(
-      Permissions.getAsync,
-      Permissions.NOTIFICATIONS
-    );
-    let finalStatus = existingStatus;
-
-    // only ask if permissions have not already been determined, because
-    // iOS won't necessarily prompt the user a second time.
-    if (existingStatus !== 'granted') {
-      console.log('## get expo token: not granted');
-      // Android remote notification permissions are granted during the app
-      // install, so this will only ask on iOS
-      const { status } = yield call(
-        Permissions.askAsync,
-        Permissions.NOTIFICATIONS
-      );
-      finalStatus = status;
-    }
-
-    // Stop here if the user did not grant permissions
-    if (finalStatus !== 'granted') {
-      console.log('## get expo token: still not granted');
-      return { token: '' };
-    }
-
-    // Get the token that uniquely identifies this device
-    console.log('## get expo token!!');
-
-    const token = yield call(Notifications.getExpoPushTokenAsync);
-    console.log(`Expo Push Token:${token}`);
-
-    console.log(`Successfully uploaded expo token`);
-
-    return {
-      token,
-    };
-  } catch (error) {
-    console.log(`Error uploading expo token: ${error}`);
-    return { token: '' };
-  }
-}
-
 function* syncUserSaga() {
   const user = yield call(onAuthStateChanged);
 
   if (user) {
-    // const { token: pushToken } = yield call(getExpoToken);
-
-    // yield call(rsf.database.update, `users/${user.uid}/token`, pushToken.data);
-
     const { dbUser } = yield call(getUserProfile, user.uid);
 
     if (dbUser !== null && dbUser !== undefined) {
@@ -152,15 +107,15 @@ function* registerSaga({ payload }) {
       password
     );
 
-    // const { token: pushToken } = yield call(getExpoToken);
-
     yield call(rsf.database.update, `users/${user.uid}`, {
       name,
       email,
       password,
       level: 'L1',
+      currentQuestion: 'Q1',
+      currentScore: 0,
+      currentLevelScore: 0,
       uuid: user.uid,
-      // token: pushToken.data,
     });
 
     yield call(syncUserSaga);
@@ -180,14 +135,60 @@ function* logoutSaga() {
   yield call(syncUserSaga);
 }
 
+// function* saveScore({ key, score }) {
+//   const userId = yield select(getUuidFromState);
+
+//   try {
+//     yield call(rsf.database.update, `users/${userId}/${key}`, score);
+//   } catch (error) {
+//     alert(error);
+//     return;
+//   }
+// }
+
+function* saveScoreSaga({ payload }) {
+  const { answer, navigateTo } = payload;
+  const userId = yield select(getUuidFromState);
+  const currentScore = yield select(getCurrentScoreFromState);
+  const currentLevelScore = yield select(getCurrentLevelScoreFromState);
+
+  const currentQuestionStr = yield select(getCurrentQuestionFromState);
+  const currentQuestion = parseInt(currentQuestionStr.substring(1));
+  const newQuestion = currentQuestion + 1;
+
+  try {
+    if (answer === 'CORRECT') {
+      const newCurrentScore = currentScore + 1;
+      const newCurrentLevelScore = currentLevelScore + 1;
+
+      yield put(putCurrentScore(newCurrentScore, newCurrentLevelScore));
+
+      yield call(rsf.database.patch, `users/${userId}`, {
+        currentScore: newCurrentScore,
+        currentLevelScore: newCurrentLevelScore,
+      });
+    }
+
+    if (newQuestion !== 6) {
+      yield call(rsf.database.patch, `users/${userId}`, {
+        currentQuestion: `Q${newQuestion}`,
+      });
+    }
+
+    navigateTo();
+  } catch (error) {
+    alert(error);
+    return;
+  }
+}
+
 function* nextQuestionSaga({ payload }) {
   const onSwitch = payload;
   const currentQuestionStr = yield select(getCurrentQuestionFromState);
   const currentLevelStr = yield select(getCurrentLevelFromState);
-  const currentScore = yield select(getCurrentScorelFromState);
+  const currentScore = yield select(getCurrentScoreFromState);
 
   const currentQuestion = parseInt(currentQuestionStr.substring(1));
-  const currentLevel = parseInt(currentLevelStr.substring(1));
 
   switch (currentLevelStr) {
     case 'L1': {
@@ -197,13 +198,6 @@ function* nextQuestionSaga({ payload }) {
 
         onSwitch();
       } else if (currentQuestion === 5 && currentScore > 3) {
-        // const newLevel = currentLevel + 1;
-
-        // yield put(putCurrentLevel(`L${newLevel}`));
-        // yield put(currentQuestion(`Q1`));
-
-        console.log(`complete level!`);
-
         reset('LevelCompleteScreen');
       } else {
         reset('LevelCompleteScreen');
@@ -217,11 +211,6 @@ function* nextQuestionSaga({ payload }) {
 
         onSwitch();
       } else if (currentQuestion === 5 && currentScore > 3) {
-        const newLevel = currentLevel + 1;
-
-        yield put(putCurrentLevel(`L${newLevel}`));
-        yield put(currentQuestion(`Q1`));
-
         reset('LevelCompleteScreen');
       } else {
         reset('LevelCompleteScreen');
@@ -235,11 +224,6 @@ function* nextQuestionSaga({ payload }) {
 
         onSwitch();
       } else if (currentQuestion === 5 && currentScore > 3) {
-        const newLevel = currentLevel + 1;
-
-        yield put(putCurrentLevel(`L${newLevel}`));
-        yield put(currentQuestion(`Q1`));
-
         reset('LevelCompleteScreen');
       } else {
         reset('LevelCompleteScreen');
@@ -253,11 +237,6 @@ function* nextQuestionSaga({ payload }) {
 
         onSwitch();
       } else if (currentQuestion === 5 && currentScore > 3) {
-        const newLevel = currentLevel + 1;
-
-        yield put(putCurrentLevel(`L${newLevel}`));
-        yield put(currentQuestion(`Q1`));
-
         reset('LevelCompleteScreen');
       } else {
         reset('LevelCompleteScreen');
@@ -268,23 +247,59 @@ function* nextQuestionSaga({ payload }) {
 }
 
 function* retryLevelSaga() {
-  const currentLevelStr = yield select(getCurrentLevelFromState);
+  try {
+    const userId = yield select(getUuidFromState);
+    const currentScore = yield select(getCurrentScoreFromState);
+    const currentLevelScore = yield select(getCurrentLevelScoreFromState);
 
-  yield put(putCurrentLevel(currentLevelStr));
-  yield put(putCurrentQuestion(`Q1`));
+    const newCurrentScore = currentScore - currentLevelScore;
 
-  reset('Questions');
+    yield put(putCurrentScore(newCurrentScore, 0));
+
+    yield put(putCurrentQuestion(`Q1`));
+
+    yield call(rsf.database.patch, `users/${userId}`, {
+      currentQuestion: 'Q1',
+      currentScore: newCurrentScore,
+      currentLevelScore: 0,
+    });
+
+    reset('Questions');
+  } catch (error) {
+    alert(error);
+    return;
+  }
 }
 
 function* nextLevelSaga() {
-  const currentLevelStr = yield select(getCurrentLevelFromState);
-  const currentLevel = parseInt(currentLevelStr.substring(1));
-  const newLevel = currentLevel + 1;
+  try {
+    const userId = yield select(getUuidFromState);
+    const currentLevelStr = yield select(getCurrentLevelFromState);
+    const currentLevel = parseInt(currentLevelStr.substring(1));
+    const newLevel = currentLevel + 1;
 
-  yield put(putCurrentLevel(`L${newLevel}`));
-  yield put(putCurrentQuestion(`Q1`));
+    const currentScore = yield select(getCurrentScoreFromState);
 
-  reset('Questions');
+    yield put(putCurrentScore(currentScore, 0));
+
+    yield put(putCurrentLevel(`L${newLevel}`));
+    yield put(putCurrentQuestion(`Q1`));
+
+    yield call(rsf.database.patch, `users/${userId}`, {
+      level: `L${newLevel}`,
+      currentQuestion: 'Q1',
+      currentLevelScore: 0,
+    });
+
+    reset('Questions');
+  } catch (error) {
+    alert(error);
+    return;
+  }
+}
+
+function* goHomeSaga() {
+  reset('Home');
 }
 
 export default function* User() {
@@ -296,6 +311,8 @@ export default function* User() {
     takeLatest(actions.NEXT_QUESTION, nextQuestionSaga),
     takeLatest(actions.RETRY_LEVEL, retryLevelSaga),
     takeLatest(actions.NEXT_LEVEL, nextLevelSaga),
+    takeLatest(actions.SAVE_SCORE, saveScoreSaga),
+    takeLatest(actions.GO_HOME, goHomeSaga),
     takeEvery(actions.SYNC_USER, syncUserSaga),
   ]);
 }
