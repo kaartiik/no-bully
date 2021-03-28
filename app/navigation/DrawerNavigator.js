@@ -12,6 +12,7 @@ import colours from '../providers/constants/colours';
 import MainStack from './MainStack';
 import Instructions from '../screens/Instructions';
 import Achievements from '../screens/Achievements';
+import { logout } from '../providers/actions/User';
 
 function CustomDrawerContent(props) {
   const dispatch = useDispatch();

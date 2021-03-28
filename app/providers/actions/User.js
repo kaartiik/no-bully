@@ -13,12 +13,15 @@ export const actions = {
     CURRENT_LEVEL: 'PUT_CURRENT_LEVEL',
     CURRENT_QUESTION: 'PUT_CURRENT_QUESTION',
     CURRENT_SCORE: 'PUT_CURRENT_SCORE',
+    USER_RANKINGS: 'USER_RANKINGS',
   },
   RETRY_LEVEL: 'RETRY_LEVEL',
   NEXT_LEVEL: 'NEXT_LEVEL',
   SAVE_SCORE: 'SAVE_SCORE',
   NEXT_QUESTION: 'NEXT_QUESTION',
   GO_HOME: 'GO_HOME',
+  GET_ACHIEVEMENTS: 'GET_ACHIEVEMENTS',
+  REPLAY_GAME: 'REPLAY_GAME',
 };
 
 export const syncUser = () => ({
@@ -80,4 +83,17 @@ export const nextLevel = () => ({
 
 export const goHome = () => ({
   type: actions.GO_HOME,
+});
+
+export const getAchievements = () => ({
+  type: actions.GET_ACHIEVEMENTS,
+});
+
+export const putUserRankings = (rankings) => ({
+  type: actions.PUT.USER_RANKINGS,
+  payload: rankings,
+});
+
+export const replayGame = () => ({
+  type: actions.REPLAY_GAME,
 });

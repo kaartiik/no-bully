@@ -25,6 +25,7 @@ import {
   putCurrentLevel,
   putCurrentQuestion,
   putCurrentScore,
+  putUserRankings,
 } from '../actions/User';
 
 import dayjs from 'dayjs';
@@ -129,22 +130,11 @@ function* logoutSaga() {
   try {
     yield call(logoutRequest);
   } catch (error) {
-    alert('Error!');
+    alert('Error signing out.');
     return;
   }
   yield call(syncUserSaga);
 }
-
-// function* saveScore({ key, score }) {
-//   const userId = yield select(getUuidFromState);
-
-//   try {
-//     yield call(rsf.database.update, `users/${userId}/${key}`, score);
-//   } catch (error) {
-//     alert(error);
-//     return;
-//   }
-// }
 
 function* saveScoreSaga({ payload }) {
   const { answer, navigateTo } = payload;
@@ -169,11 +159,9 @@ function* saveScoreSaga({ payload }) {
       });
     }
 
-    if (newQuestion !== 6) {
-      yield call(rsf.database.patch, `users/${userId}`, {
-        currentQuestion: `Q${newQuestion}`,
-      });
-    }
+    yield call(rsf.database.patch, `users/${userId}`, {
+      currentQuestion: `Q${newQuestion}`,
+    });
 
     navigateTo();
   } catch (error) {
@@ -302,6 +290,45 @@ function* goHomeSaga() {
   reset('Home');
 }
 
+function* getAchievementsSaga() {
+  try {
+    const usersOrderedByScore = yield call(
+      rsf.database.read,
+      database.ref('users').orderByChild('currentScore')
+    );
+
+    const usersArr = Object.values(usersOrderedByScore);
+
+    yield put(putUserRankings(usersArr));
+  } catch (error) {
+    alert(error);
+    return;
+  }
+}
+
+function* replayGameSaga() {
+  try {
+    const userId = yield select(getUuidFromState);
+
+    yield put(putCurrentLevel('L1'));
+    yield put(putCurrentQuestion('Q1'));
+
+    yield put(putCurrentScore(0, 0));
+
+    yield call(rsf.database.patch, `users/${userId}`, {
+      level: 'L1',
+      currentQuestion: `Q1`,
+      currentLevelScore: 0,
+      currentScore: 0,
+    });
+
+    navigate('Questions');
+  } catch (error) {
+    alert(error);
+    return;
+  }
+}
+
 export default function* User() {
   yield all([
     takeLatest(actions.REGISTER_REQUEST, registerSaga),
@@ -313,6 +340,8 @@ export default function* User() {
     takeLatest(actions.NEXT_LEVEL, nextLevelSaga),
     takeLatest(actions.SAVE_SCORE, saveScoreSaga),
     takeLatest(actions.GO_HOME, goHomeSaga),
+    takeLatest(actions.GET_ACHIEVEMENTS, getAchievementsSaga),
+    takeLatest(actions.REPLAY_GAME, replayGameSaga),
     takeEvery(actions.SYNC_USER, syncUserSaga),
   ]);
 }

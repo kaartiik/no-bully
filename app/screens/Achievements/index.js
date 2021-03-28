@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-
+import { View, Text, StyleSheet, FlatList, TextInput } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { useFocusEffect } from '@react-navigation/native';
 import AppBar from '../../components/AppBar';
 import colours from '../../providers/constants/colours';
 
@@ -8,33 +9,82 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
+import { getAchievements } from '../../providers/actions/User';
+
 const styles = StyleSheet.create({
-  textContainer: { fontSize: 18, margin: 5 },
+  headerContainer: { marginVertical: 10 },
+  itemContainer: { flexDirection: 'row', marginVertical: 5 },
+  nameColumn: { width: '70%', fontWeight: 'bold' },
+  scoreColumn: { width: '30%', fontWeight: 'bold' },
 });
 
 function Instructions({ route, navigation }) {
+  const dispatch = useDispatch();
+  const [search, setSearch] = useState('');
+  const [data, setData] = useState([]);
+
+  const { userRankings } = useSelector((state) => ({
+    userRankings: state.userReducer.userRankings,
+  }));
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getAchievements());
+    }, [])
+  );
+
+  useEffect(() => {
+    setData(userRankings);
+  }, [userRankings]);
+
+  const searchData = (searchText) => {
+    let newData = [];
+    if (searchText) {
+      newData = userRankings.filter((item) => {
+        return item.name.indexOf(searchText) > -1;
+      });
+      setData([...newData]);
+    } else {
+      setData([...userRankings]);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colours.white }}>
-      <AppBar title="How to Play?" showBack />
+      <AppBar title="Achievements" showBack />
 
-      <View style={{ padding: 10 }}>
-        <Text style={styles.textContainer}>
-          1. This game consists of 4 parts. Level 1 until Level 4.
-        </Text>
-        <Text style={styles.textContainer}>
-          2. In each part, you will be given 5 situations and you must choose
-          the action you will take based on that situations.
-        </Text>
-        <Text style={styles.textContainer}>
-          3. You are eligible to go up to the next level if you get a minimum
-          score 3 out of 5.
-        </Text>
-        <Text style={styles.textContainer}>
-          4. You need to redo the part you cannot get minimum mark to proceed to
-          the next level.
-        </Text>
-        <View style={styles.divider} />
-      </View>
+      <FlatList
+        data={data}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={{ padding: 10 }}
+        ListHeaderComponent={
+          <View style={styles.headerContainer}>
+            <TextInput
+              placeholder="Search users..."
+              value={search}
+              onChangeText={(text) => {
+                setSearch(text);
+                searchData(text);
+              }}
+              style={{
+                backgroundColor: colours.veryLightPink,
+                borderRadius: 8,
+                padding: 5,
+              }}
+            />
+            <View style={styles.itemContainer}>
+              <Text style={styles.nameColumn}>Name</Text>
+              <Text style={styles.scoreColumn}>Score</Text>
+            </View>
+          </View>
+        }
+        renderItem={({ item, index }) => (
+          <View style={styles.itemContainer}>
+            <Text style={styles.nameColumn}>{item.name}</Text>
+            <Text style={styles.scoreColumn}>{item.currentScore}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 }

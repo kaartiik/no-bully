@@ -4,10 +4,10 @@ import { Header, Left, Right, Body } from 'native-base';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import colours from '../providers/constants/colours';
-import { logout } from '../providers/actions/User';
+import { useNavigation } from '@react-navigation/native';
 
 const AppBar = ({ title, showBack }) => {
-  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   const { isAdmin } = useSelector((state) => ({
     isAdmin: state.userReducer.isAdmin,
@@ -30,7 +30,7 @@ const AppBar = ({ title, showBack }) => {
         }}
       >
         <Left>
-          <TouchableOpacity onPress={() => dispatch(logout())}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons
               name="arrow-back"
               size={20}
@@ -40,12 +40,6 @@ const AppBar = ({ title, showBack }) => {
         </Left>
 
         <Body>
-          {/* <Image
-            // eslint-disable-next-line global-require
-            source={require('../../assets/barbershop.png')}
-            resizeMode="contain"
-            style={{ alignSelf: 'flex-start', height: '100%', width: '150%' }}
-          /> */}
           <Text>{title}</Text>
         </Body>
 

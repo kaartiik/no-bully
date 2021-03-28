@@ -63,9 +63,8 @@ function Questions({ route, navigation }) {
       <AppBar title={`Level ${level}`} />
 
       <View style={{ padding: 10, alignItems: 'center' }}>
-        <Text>Question {currentQuestion}</Text>
-        <Text>CSCore {currentScore}</Text>
-        <Text>currentLevelScore {currentLevelScore}</Text>
+        <Text>Question: {currentQuestion}</Text>
+        <Text>Level Score: {currentLevelScore}</Text>
         <Image
           source={{ uri: questions[level][currentQuestion].imageUrl }}
           style={globalStyles.imgContainer}

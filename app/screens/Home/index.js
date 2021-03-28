@@ -17,6 +17,8 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
+import { replayGame } from '../../providers/actions/User';
+
 const styles = StyleSheet.create({
   divider: {
     marginHorizontal: 16,
@@ -58,8 +60,11 @@ const styles = StyleSheet.create({
 });
 
 function Home({ route, navigation }) {
-  const { level } = useSelector((state) => ({
+  const dispatch = useDispatch();
+
+  const { level, currentQuestion } = useSelector((state) => ({
     level: state.userReducer.level,
+    currentQuestion: state.userReducer.currentQuestion,
   }));
 
   return (
@@ -72,21 +77,46 @@ function Home({ route, navigation }) {
       }}
     >
       <Text style={{ fontSize: 80 }}>No Bully</Text>
-      <Text style={{ fontSize: 16 }}>Current Level: {level}</Text>
-      <TouchableOpacity
-        style={{
-          marginTop: 30,
-          paddingVertical: 10,
-          paddingHorizontal: 20,
-          backgroundColor: colours.themePrimary,
-          borderRadius: 4,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        onPress={() => navigation.navigate('Questions')}
-      >
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Start</Text>
-      </TouchableOpacity>
+
+      {currentQuestion !== 'Q6' ? (
+        <>
+          <Text style={{ fontSize: 16 }}>Current Level: {level}</Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 30,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: colours.themePrimary,
+              borderRadius: 4,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={() => navigation.navigate('Questions')}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Start</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text style={{ fontSize: 16 }}>
+            You have successfully completed the game!
+          </Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 30,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: colours.themePrimary,
+              borderRadius: 4,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={() => dispatch(replayGame())}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Replay</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 }

@@ -8,6 +8,7 @@ const initialState = {
   uuid: '',
   currentScore: 0,
   currentLevelScore: 0,
+  userRankings: [],
 };
 
 export default function userReducer(state = initialState, action = {}) {
@@ -51,6 +52,12 @@ export default function userReducer(state = initialState, action = {}) {
       return {
         ...state,
         currentQuestion: action.payload,
+      };
+
+    case actions.PUT.USER_RANKINGS:
+      return {
+        ...state,
+        userRankings: action.payload,
       };
 
     default:
