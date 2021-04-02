@@ -287,6 +287,12 @@ function* nextLevelSaga() {
 }
 
 function* goHomeSaga() {
+  const currentQuestionStr = yield select(getCurrentQuestionFromState);
+  const currentQuestion = parseInt(currentQuestionStr.substring(1));
+
+  const newQuestion = currentQuestion + 1;
+  yield put(putCurrentQuestion(`Q${newQuestion}`));
+
   reset('Home');
 }
 
