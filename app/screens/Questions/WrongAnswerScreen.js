@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import AppBar from '../../components/AppBar';
 import colours from '../../providers/constants/colours';
@@ -27,6 +27,11 @@ const styles = StyleSheet.create({
 function WrongAnswerScreen({ route, navigation }) {
   const dispatch = useDispatch();
 
+  const { currentQuestion, level } = useSelector((state) => ({
+    currentQuestion: state.userReducer.currentQuestion,
+    level: state.userReducer.level,
+  }));
+
   const switchToNextQuestionLevel = () => {
     dispatch(switchNextQuestion(() => navigation.navigate('Questions')));
   };
@@ -36,9 +41,9 @@ function WrongAnswerScreen({ route, navigation }) {
       <AppBar title="Wrong" />
 
       <View style={{ padding: 10, alignItems: 'center' }}>
-        <Text>You got it wrong :(</Text>
+        <Text>{questions[level][currentQuestion].wrongResultMessage}</Text>
         <Image
-          source={require('../../../assets/wrongImage.png')}
+          source={{ uri: questions[level][currentQuestion].wrongResultUrl }}
           style={globalStyles.imgContainer}
         />
 

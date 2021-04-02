@@ -44,6 +44,70 @@ function LevelCompleteScreen({ route, navigation }) {
     dispatch(goHome());
   };
 
+  const computeNextProcess = () => {
+    if (level !== 'L4' && currentLevelScore < 4) {
+      if (currentLevelScore > 3) {
+        return (
+          <>
+            <Image
+              source={require('../../../assets/success.jpg')}
+              style={globalStyles.imgContainer}
+            />
+
+            <View
+              style={{
+                alignItems: 'center',
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => proceedNextLevel()}
+                style={styles.answerButton}
+              >
+                <Text>Next Level</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        );
+      }
+      return (
+        <>
+          <Image
+            source={require('../../../assets/failed.jpg')}
+            style={globalStyles.imgContainer}
+          />
+
+          <View
+            style={{
+              alignItems: 'center',
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => proceedRetryLevel()}
+              style={styles.answerButton}
+            >
+              <Text>Retry Level</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      );
+    }
+    return (
+      <>
+        <Image
+          source={require('../../../assets/gameComplete.png')}
+          style={globalStyles.imgContainer}
+        />
+
+        <TouchableOpacity
+          onPress={() => proceedGoHome()}
+          style={styles.answerButton}
+        >
+          <Text>Home</Text>
+        </TouchableOpacity>
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colours.white }}>
       <AppBar title={`Level ${level} Completed`} />
@@ -51,59 +115,7 @@ function LevelCompleteScreen({ route, navigation }) {
       <View style={{ padding: 10, alignItems: 'center' }}>
         <Text>Your score is {currentLevelScore}/5</Text>
 
-        {level !== 4 && currentLevelScore < 3 ? (
-          <>
-            {currentLevelScore > 3 ? (
-              <Image
-                source={require('../../../assets/success.jpg')}
-                style={globalStyles.imgContainer}
-              />
-            ) : (
-              <Image
-                source={require('../../../assets/failed.jpg')}
-                style={globalStyles.imgContainer}
-              />
-            )}
-
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              {currentLevelScore > 3 ? (
-                <TouchableOpacity
-                  onPress={() => proceedNextLevel()}
-                  style={styles.answerButton}
-                >
-                  <Text>Next Level</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => proceedRetryLevel()}
-                  style={styles.answerButton}
-                >
-                  <Text>Retry Level</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </>
-        ) : (
-          <>
-            <Image
-              source={require('../../../assets/gameComplete.png')}
-              style={globalStyles.imgContainer}
-            />
-
-            <TouchableOpacity
-              onPress={() => proceedGoHome()}
-              style={styles.answerButton}
-            >
-              <Text>Home</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        {computeNextProcess()}
       </View>
     </View>
   );

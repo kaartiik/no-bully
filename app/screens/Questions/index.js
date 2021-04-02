@@ -65,6 +65,11 @@ function Questions({ route, navigation }) {
       <View style={{ padding: 10, alignItems: 'center' }}>
         <Text>Question: {currentQuestion}</Text>
         <Text>Level Score: {currentLevelScore}</Text>
+
+        <Text style={{ marginTop: 12 }}>
+          {questions[level][currentQuestion].question}
+        </Text>
+
         <Image
           source={{ uri: questions[level][currentQuestion].imageUrl }}
           style={globalStyles.imgContainer}
