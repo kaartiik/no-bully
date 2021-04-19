@@ -78,25 +78,7 @@ function Home({ route, navigation }) {
     >
       <Text style={{ fontSize: 80 }}>No Bully</Text>
 
-      {currentQuestion !== 'Q6' ? (
-        <>
-          <Text style={{ fontSize: 16 }}>Current Level: {level}</Text>
-          <TouchableOpacity
-            style={{
-              marginTop: 30,
-              paddingVertical: 10,
-              paddingHorizontal: 20,
-              backgroundColor: colours.themePrimary,
-              borderRadius: 4,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onPress={() => navigation.navigate('Questions')}
-          >
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>Start</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
+      {level === 'L4' && currentQuestion === 'Q6' ? (
         <>
           <Text style={{ fontSize: 16 }}>
             You have successfully completed the game!
@@ -114,6 +96,24 @@ function Home({ route, navigation }) {
             onPress={() => dispatch(replayGame())}
           >
             <Text style={{ color: 'white', fontWeight: 'bold' }}>Replay</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text style={{ fontSize: 16 }}>Current Level: {level}</Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 30,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: colours.themePrimary,
+              borderRadius: 4,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={() => navigation.navigate('Questions')}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Start</Text>
           </TouchableOpacity>
         </>
       )}

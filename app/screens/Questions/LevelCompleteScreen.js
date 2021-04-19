@@ -44,35 +44,30 @@ function LevelCompleteScreen({ route, navigation }) {
     dispatch(goHome());
   };
 
-  const computeNextProcess = () => {
-    if (level !== 'L4' && currentLevelScore < 4) {
-      if (currentLevelScore > 3) {
-        return (
-          <>
-            <Image
-              source={require('../../../assets/success.jpg')}
-              style={globalStyles.imgContainer}
-            />
+  console.log(level, currentLevelScore);
 
-            <View
-              style={{
-                alignItems: 'center',
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => proceedNextLevel()}
-                style={styles.answerButton}
-              >
-                <Text>Next Level</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        );
-      }
+  const computeNextProcess = () => {
+    if (level === 'L4' && currentLevelScore > 3) {
       return (
         <>
           <Image
-            source={require('../../../assets/failed.jpg')}
+            source={require('../../../assets/gameComplete.png')}
+            style={globalStyles.imgContainer}
+          />
+
+          <TouchableOpacity
+            onPress={() => proceedGoHome()}
+            style={styles.answerButton}
+          >
+            <Text>Home</Text>
+          </TouchableOpacity>
+        </>
+      );
+    } else if (level !== 'L4' && currentLevelScore > 3) {
+      return (
+        <>
+          <Image
+            source={require('../../../assets/success.jpg')}
             style={globalStyles.imgContainer}
           />
 
@@ -82,10 +77,10 @@ function LevelCompleteScreen({ route, navigation }) {
             }}
           >
             <TouchableOpacity
-              onPress={() => proceedRetryLevel()}
+              onPress={() => proceedNextLevel()}
               style={styles.answerButton}
             >
-              <Text>Retry Level</Text>
+              <Text>Next Level</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -94,16 +89,22 @@ function LevelCompleteScreen({ route, navigation }) {
     return (
       <>
         <Image
-          source={require('../../../assets/gameComplete.png')}
+          source={require('../../../assets/failed.jpg')}
           style={globalStyles.imgContainer}
         />
 
-        <TouchableOpacity
-          onPress={() => proceedGoHome()}
-          style={styles.answerButton}
+        <View
+          style={{
+            alignItems: 'center',
+          }}
         >
-          <Text>Home</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => proceedRetryLevel()}
+            style={styles.answerButton}
+          >
+            <Text>Retry Level</Text>
+          </TouchableOpacity>
+        </View>
       </>
     );
   };
